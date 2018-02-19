@@ -122,8 +122,18 @@ R = eye(2);
 K= lqr(A,B,Q,R);
 u = -K*(xvec - xdes_vec) + [vf; wf];
 dxvec = [u(1)*cos(theta);u(1)*sin(theta);u(2)];
-X(:,i+1)= dxvec*dt+ X(:,i);
+
+ X(:,i+1)= dxvec*dt+ X(:,i);
+
+% with noise
+%X(:,i+1)= dxvec*dt+ X(:,i) +0.05*randn(1);
+
+
 end
+
+
+
+
 for i=1:N;
     t=tsteps(i);
     basis = [1; t; t^2; t^3];
