@@ -59,16 +59,7 @@ bvec2 = double(param2(5:end)');
 
 % now apply the feedback controller
 % ode_tracking;
-figure
-[Xdes1,X1] = ode_tracking(Tf,avec1,bvec1);
-plot(Xdes1(1,:), Xdes1(2,:), 'LineWidth', 4);
-% % hold on 
 
-title('Trajectory for points (-1,4.5)-->(6,2)-->(0,0)');
-hold on 
-[Xdes2,X2] = ode_tracking(Tf,avec2,bvec2);
-
-plot(Xdes2(1,:), Xdes2(2,:), 'LineWidth', 4);
 % hold on 
 
 % plot(X2(1,:), X2(2,:),'LineWidth', 4);
@@ -85,15 +76,15 @@ vi1 = 0;
 vi2 = 0;
 vf1 = 0;
 vf2 = 0;
-d0 = [0,4,vo1,vi1,0,10];
+d0 = [0,6,vo1,vi1,0,5];
 [qd0,vd0,ad0] = cubic(d0(1),d0(2),d0(3),d0(4),d0(5),d0(6));
-d1 = [6,2,v02,vi2,0,10];
+d1 = [4,2,v02,vi2,0,5];
 [qd1,vd1,ad1] = cubic(d1(1),d1(2),d1(3),d1(4),d1(5),d1(6));
-d2 = [6,2,vi1,vf1,0,10];
+d2 = [6,0,vi1,vf1,0,5];
 [qd2,vd2,ad2] = cubic(d2(1),d2(2),d2(3),d2(4),d2(5),d2(6));
-d3 = [0,0,vi2,vf2,0,10];
+d3 = [2,0,vi2,vf2,0,5];
 [qd3,vd3,ad3] = cubic(d3(1),d3(2),d3(3),d3(4),d3(5),d3(6));
- t = linspace(0,10,100*10);
+ t = linspace(0,5,100*5);
 %% plot-1 Time-position
 figure;
 % q(1,:) = qd0;
@@ -101,12 +92,23 @@ figure;
 % q(1,501:750) = qd2;
 % q(1,751:1000) = qd3;
 plot(t,qd0,'LineWidth', 4);
+title('Trajectory before controller')
 hold on
 plot(t,qd1,'LineWidth', 4);
 hold on
 plot(t,qd2,'LineWidth', 4);
 hold on
 plot(t,qd3,'LineWidth', 4);
+figure
+[Xdes1,X1] = ode_tracking(Tf,avec1,bvec1);
+plot(Xdes1(1,:), Xdes1(2,:), 'LineWidth', 4);
+% % hold on 
+
+title('Trajectory for points (-1,4.5)-->(6,2)-->(0,0)');
+hold on 
+[Xdes2,X2] = ode_tracking(Tf,avec2,bvec2);
+
+plot(Xdes2(1,:), Xdes2(2,:), 'LineWidth', 4);
 function [Xdes,X] = ode_tracking(Tf,avec, bvec)
 % evaluate the desired state.
 dt=0.01;
