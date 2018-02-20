@@ -91,14 +91,14 @@ figure;
 % q(1,251:500) = qd1;
 % q(1,501:750) = qd2;
 % q(1,751:1000) = qd3;
-plot(t,qd0,'LineWidth', 4);
+plot(qd0,qd1,'LineWidth', 4);
 title('Trajectory before controller')
 hold on
-plot(t,qd1,'LineWidth', 4);
-hold on
-plot(t,qd2,'LineWidth', 4);
-hold on
-plot(t,qd3,'LineWidth', 4);
+plot(qd2,qd3,'LineWidth', 4);
+% hold on
+% plot(t,qd2,'LineWidth', 4);
+% hold on
+% plot(t,qd3,'LineWidth', 4);
 figure
 [Xdes1,X1] = ode_tracking(Tf,avec1,bvec1);
 plot(Xdes1(1,:), Xdes1(2,:), 'LineWidth', 4);
