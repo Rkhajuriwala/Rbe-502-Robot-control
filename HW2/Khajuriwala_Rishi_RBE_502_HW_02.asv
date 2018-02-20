@@ -103,11 +103,10 @@ figure
 [Xdes1,X1] = ode_tracking(Tf,avec1,bvec1);
 plot(Xdes1(1,:), Xdes1(2,:), 'LineWidth', 4);
 % % hold on 
-
-title('Trajectory for points (-1,4.5)-->(6,2)-->(0,0)');
+title('Trajectory after controller')
+% title('Trajectory for points (-1,4.5)-->(6,2)-->(0,0)');
 hold on 
 [Xdes2,X2] = ode_tracking(Tf,avec2,bvec2);
-
 plot(Xdes2(1,:), Xdes2(2,:), 'LineWidth', 4);
 function [Xdes,X] = ode_tracking(Tf,avec, bvec)
 % evaluate the desired state.
@@ -165,7 +164,11 @@ B = [ cos(thetades), 0;
 
 Q= eye(3);
 R = eye(2);
-K = [0 0 0;0 0 0];
+% for all these values of gain the 
+K = [0.1 0.1 0.1;0.1 0.1 0.1];
+% K = [1 1 1;1 1 1];
+% K = [10 10 10;10 10 10];
+% K = [0 0 0;0 0 0];
 % K= lqr(A,B,Q,R);
 u = -K*(xvec - xdes_vec) + [vf; wf];
 dxvec = [u(1)*cos(theta);u(1)*sin(theta);u(2)];
@@ -196,18 +199,3 @@ qd = a(1).*c + a(2).*t +a(3).*t.^2 + a(4).*t.^3 ;
 vd = a(2).*c +2*a(3).*t +3*a(4).*t.^2 ; 
 ad = 2*a(3).*c + 6*a(4).*t;
 end
-% function [qd,vd,ad] = Quintic(qi,vi,aci,qf,vf,acf,ti,tf)
-% t = linspace(ti,tf);
-% c = ones(size(t));
-% M = [1 ti ti^2 ti^3   ti^4    ti^5;
-%      0 1  2*ti 3*ti^2 4*ti^3  5*ti^4;
-%      0 0  2    6*ti   12*ti^2 20*ti^3;
-%      1 tf tf^2 tf^3   tf^4    tf^5;
-%      0 1  2*tf 3*tf^2 4*tf^3  5*tf^4;
-%      0 0  2    6*tf   12*tf^2 20*tf^3];
-%  b = [qi; vi; aci; qf; vf; acf];
-%  a = inv(M)* b;
-%  qd = a(1).*c + a(2).*t +a(3).*t.^2 + a(4).*t.^3 +a(5).*t.^4 + a(6).*t.^5;
-%  vd = a(2).*c +2*a(3).*t +3*a(4).*t.^2 +4*a(5).*t.^3 +5*a(6).*t.^4; 
-%  ad = 2*a(3).*c + 6*a(4).*t +12*a(5).*t.^2 +20*a(6).*t.^3;
-% end

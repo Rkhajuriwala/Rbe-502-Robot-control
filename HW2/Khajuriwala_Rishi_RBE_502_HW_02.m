@@ -164,9 +164,13 @@ B = [ cos(thetades), 0;
 
 Q= eye(3);
 R = eye(2);
-K = [0.1 0.1 0.1;0.1 0.1 0.1];
-% K = [0 0 0;0 0 0];
-
+% for all these values of gain the trajectory is not changing
+K = [0 0 1;0 0 1];
+% K = [1 0 0;1 0 0];
+% K = [1 0 1;1 0 1];
+% K = [0.1 0.1 0.1;0.1 0.1 0.1];
+% K = [1 1 1;1 1 1];
+% K = [10 10 10;10 10 10];
 % K = [0 0 0;0 0 0];
 % K= lqr(A,B,Q,R);
 u = -K*(xvec - xdes_vec) + [vf; wf];
