@@ -67,8 +67,8 @@ function dx = PDControl(t,x,xf,symx,invM,invMC)
     i_m = subs(invM,[symx(1) symx(2) symx(3) symx(4)],[x(1) x(2) x(3) x(4)]);
     i_m_c = subs(invMC,[symx(1) symx(2) symx(3) symx(4)],[x(1) x(2) x(3) x(4)]);
     u = -Kp*((x(1:2)-xf(1:2))) - Kv*((x(3:4)-xf(3:4)));
-    dx(1) = x(3); 
-    dx(2) = x(4);
+    dx(1) = x(3)
+    dx(2) = x(4)
     dx(3:4) = i_m*u - i_m_c*x(3:4);
     dx = dx';
 end
