@@ -1,0 +1,508 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>robustControl</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-04-09"><meta name="DC.source" content="robustControl.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Trajectory planning block</a></li><li><a href="#4">TODO: IMPLEMENT THE CONTROLLER</a></li><li><a href="#5">TODO: IMPLEMENT THE CONTROLLER TO AVOID CHATTERING.</a></li><li><a href="#7">Calculating the Mbar</a></li><li><a href="#8">Calculating Value of V for the controller</a></li><li><a href="#9">TODO: compute the robust controller</a></li><li><a href="#12">Calculating value of V</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> []= robustControl(theta10,theta20,dtheta10, dtheta20,theta1f, theta2f,dtheta1f,dtheta2f,tf)
+</pre><pre class="codeinput"><span class="comment">% Robust control design for 2-D planar arm.</span>
+<span class="comment">% input: initial and final state.</span>
+<span class="comment">% output: Demostrate the performance of robust controller with parameter</span>
+<span class="comment">% uncertainty.</span>
+<span class="comment">% the nominal model parameter:</span>
+m1 =10; m2=5; l1=1; l2=1; r1=0.5; r2 =.5; I1=10/12; I2=5/12; <span class="comment">% parameters in the paper.</span>
+<span class="comment">% the nominal parameter vector b0 is</span>
+b0 = [ m1* r1^2 + m2*l1^2 + I1; m2*r2^2 + I2; m2*l1*r2];
+</pre><h2 id="3">Trajectory planning block</h2><p>Initial condition (TODO: CHANGE DIFFERENT INITIAL AND FINAL STATES)</p><pre class="codeinput">x0=[-0.5,0,-1,0.1];
+x0e = [-0.7,0.5,-0.2,0]; <span class="comment">% an error in the initial state.</span>
+xf=[0.8,0.5, 0, 0];
+<span class="comment">% The parameter for planned joint trajectory 1 and 2.</span>
+<span class="keyword">global</span> a1 a2 <span class="comment">% two polynomial trajectory for the robot joint</span>
+nofigure=1;
+<span class="comment">% Traj generation.</span>
+a1 = planarArmTraj(theta10,dtheta10, theta1f, dtheta1f,tf, nofigure);
+a2 = planarArmTraj(theta20,dtheta20, theta2f, dtheta2f,tf, nofigure);
+
+
+torque=[];
+options = odeset(<span class="string">'RelTol'</span>,1e-4,<span class="string">'AbsTol'</span>,[1e-4, 1e-4, 1e-4, 1e-4]);
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in robustControl (line 22)
+a1 = planarArmTraj(theta10,dtheta10, theta1f, dtheta1f,tf, nofigure);
+</pre><h2 id="4">TODO: IMPLEMENT THE CONTROLLER</h2><pre class="codeinput"> [T,X] = ode45(@(t,x)planarArmODERobust(t,x),[0 tf],x0e,options);
+figure(<span class="string">'Name'</span>,<span class="string">'theta1'</span>);
+plot(T, X(:,1),<span class="string">'r-'</span>);
+hold <span class="string">on</span>
+plot(T, a1(1)+a1(2)*T+ a1(3)*T.^2+a1(4)*T.^3,<span class="string">'b-'</span>)
+title(<span class="string">'Theta_1 under Robust Control'</span>);
+figure(<span class="string">'Name'</span>,<span class="string">'theta2'</span>);
+plot(T, X(:,2),<span class="string">'r-'</span>);
+hold <span class="string">on</span>
+plot(T, a2(1)+a2(2)*T+ a2(3)*T.^2+a2(4)*T.^3, <span class="string">'b-'</span>);
+title(<span class="string">'Theta_2 under Robust Control'</span>);
+</pre><h2 id="5">TODO: IMPLEMENT THE CONTROLLER TO AVOID CHATTERING.</h2><pre class="codeinput">[T1,X1] = ode45(@(t,x)planarArmODERobustApprx(t,x),[0 tf],x0e,options);
+
+figure(<span class="string">'Name'</span>,<span class="string">'theta1'</span>);
+plot(T1, X1(:,1),<span class="string">'r-'</span>);
+hold <span class="string">on</span>
+plot(T1, a1(1)+a1(2)*T1+ a1(3)*T1.^2+a1(4)*T1.^3,<span class="string">'b-'</span>)
+title(<span class="string">'Theta_1 under Robust Control'</span>);
+figure(<span class="string">'Name'</span>,<span class="string">'theta2'</span>);
+plot(T1, X1(:,2),<span class="string">'r-'</span>);
+hold <span class="string">on</span>
+plot(T1, a2(1)+a2(2)*T1+ a2(3)*T1.^2+a2(4)*T1.^3, <span class="string">'b-'</span>);
+title(<span class="string">'Theta_2 under Robust Control'</span>);
+
+<span class="comment">%TODO: PLOT THE INPUT TRAJECTORY</span>
+
+
+
+
+    <span class="keyword">function</span> [dx ] = planarArmODERobust(t,x)
+</pre><pre class="codeinput">        <span class="comment">%Todo: Select your feedback gain matrix Kp and Kd.</span>
+        Kp = eye(2)*80;
+        Kd = eye(2)*10;
+        <span class="comment">% Compute the desired state and their time derivatives from planned</span>
+        <span class="comment">% trajectory.</span>
+        vec_t = [1; t; t^2; t^3]; <span class="comment">% cubic polynomials</span>
+        theta_d= [a1'*vec_t; a2'*vec_t];
+        <span class="comment">%ref = [ref,theta_d];</span>
+        <span class="comment">% compute the velocity and acceleration in both theta 1 and theta2.</span>
+        a1_vel = [a1(2), 2*a1(3), 3*a1(4), 0];
+        a1_acc = [2*a1(3), 6*a1(4),0,0 ];
+        a2_vel = [a2(2), 2*a2(3), 3*a2(4), 0];
+        a2_acc = [2*a2(3), 6*a2(4),0,0 ];
+        dtheta_d =[a1_vel*vec_t; a2_vel* vec_t];
+        ddtheta_d =[a2_acc*vec_t; a2_acc* vec_t];
+        theta= x(1:2,1);
+        dtheta= x(3:4,1);
+</pre><h2 id="7">Calculating the Mbar</h2><p>M upper bound</p><pre class="codeinput">        a_u = I1+I2+(15/12)+m1*r1^2+ (m2+10)*(l1^2+ (r2+0.5)^2);
+        b_u = (m2+10)*l1*(r2+0.5);
+        d_u = I2+(15/12)+ (m2+10)*(r2+0.5)^2;
+        M_u = [a_u+2*b_u*cos(x(2)), d_u+b_u*cos(x(2));  d_u+b_u*cos(x(2)), d_u];
+        C_u = [-b_u*sin(x(2))*x(4), -b_u*sin(x(2))*(x(3)+x(4)); b_u*sin(x(2))*x(3),0];
+        <span class="comment">% M lower Bound</span>
+        a_l = I1+I2+m1*r1^2+ m2*(l1^2+ r2^2);
+        b_l = m2*l1*r2;
+        d_l = I2+m2*r2^2;
+        M_l = [a_l+2*b_l*cos(x(2)), d_l+b_l*cos(x(2));  d_l+b_l*cos(x(2)), d_l];
+        C_l = [-b_l*sin(x(2))*x(4), -b_l*sin(x(2))*(x(3)+x(4)); b_l*sin(x(2))*x(3),0];
+        <span class="comment">% M_bar = 2/(Mu+Ml)</span>
+        M_bar = 2* inv(M_u + M_l);
+        b_bar = (M_bar(2,1)-M_bar(2,2))/cos(x(2));
+        C_bar = [-b_bar*sin(x(2))*x(4), -b_bar*sin(x(2))*(x(3)+x(4)); b_bar*sin(x(2))*x(3),0];
+        <span class="comment">%the true model</span>
+        m2t = m2+ 10*rand(1);<span class="comment">% m1 true value is in [m1, m1+epsilon_m1] and epsilon_m1 a random number in [0,10];</span>
+        r2t = r2 + 0.5*rand(1);
+        I2t = I2 + (15/12)*rand(1);
+
+        a = I1+I2+m1*r1^2+ m2t*(l1^2+ r2t^2);
+        b = m2t*l1*r2t;
+        d = I2t+ m2t*r2t^2;
+
+
+        <span class="comment">% the actual dynamic model of the system is characterized by M and</span>
+        <span class="comment">% C</span>
+        Mmat = [a+2*b*cos(x(2)), d+b*cos(x(2));  d+b*cos(x(2)), d];
+        Cmat = [-b*sin(x(2))*x(4), -b*sin(x(2))*(x(3)+x(4)); b*sin(x(2))*x(3),0];
+        invM = inv(Mmat);
+        invMC = invM*Cmat;
+</pre><h2 id="8">Calculating Value of V for the controller</h2><pre class="codeinput">        e = theta - theta_d;
+        e_dot = dtheta - dtheta_d;
+        xe1 = [e(1);e_dot(1)];
+        xe2 = [e(2);e_dot(2)];
+        P = [1 0;0 1];
+        B = [0;1];
+        gamma_1 = 100;
+        gamma_2 = 200;
+        gamma_3 = 300;
+        alpha = 0.5;
+        rho1 = (1/(1-alpha))*(gamma_1*norm(xe1')+gamma_2*(norm(xe2').^2)+gamma_3);
+        rho2 = (1/(1-alpha))*(gamma_1*norm(xe2')+gamma_2*(norm(xe2').^2)+gamma_3);
+        v = [-xe1'*P*B*rho1/norm(xe1'*P*B);-xe2'*P*B*rho2/norm(xe2'*P*B)];
+</pre><h2 id="9">TODO: compute the robust controller</h2><pre class="codeinput">        aq = ddtheta_d - Kp*e - Kd*e_dot + v;
+        q_d_dot=(invM*(M_bar*aq + C_bar*dtheta));
+        <span class="comment">%TODO: update the system state, compute dx</span>
+        dx=zeros(4,1);
+        dx(1) = x(3);
+        dx(2) = x(4);
+        dx(3) = q_d_dot(1);
+        dx(4) = q_d_dot(2);
+<span class="comment">%         dx(3:4) = -invMC* x(3:4) +invM*tau; % because ddot theta = -M^{-1}(C \dot Theta) + M^{-1} tau</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+
+
+
+        <span class="keyword">function</span> [dx ] = planarArmODERobustApprx(t,x)
+</pre><pre class="codeinput">        <span class="comment">%Todo: Select your feedback gain matrix Kp and Kd.</span>
+        Kp = eye(2)*100;
+        Kd = eye(2)*10;
+        <span class="comment">% Compute the desired state and their time derivatives from planned</span>
+        <span class="comment">% trajectory.</span>
+        vec_t = [1; t; t^2; t^3]; <span class="comment">% cubic polynomials</span>
+        theta_d= [a1'*vec_t; a2'*vec_t];
+        <span class="comment">%ref = [ref,theta_d];</span>
+        <span class="comment">% compute the velocity and acceleration in both theta 1 and theta2.</span>
+        a1_vel = [a1(2), 2*a1(3), 3*a1(4), 0];
+        a1_acc = [2*a1(3), 6*a1(4),0,0 ];
+        a2_vel = [a2(2), 2*a2(3), 3*a2(4), 0];
+        a2_acc = [2*a2(3), 6*a2(4),0,0 ];
+        dtheta_d =[a1_vel*vec_t; a2_vel* vec_t];
+        ddtheta_d =[a2_acc*vec_t; a2_acc* vec_t];
+        theta= x(1:2,1);
+        dtheta= x(3:4,1);
+
+        <span class="comment">%the true model</span>
+        m2t = m2+ 10*rand(1);<span class="comment">% m1 true value is in [m1, m1+epsilon_m1] and epsilon_m1 a random number in [0,10];</span>
+        r2t = r2 + 0.5*rand(1);
+        I2t = I2 + (15/12)*rand(1);
+
+        a = I1+I2+m1*r1^2+ m2t*(l1^2+ r2t^2);
+        b = m2t*l1*r2t;
+        d = I2t+ m2t*r2t^2;
+        <span class="comment">% the actual dynamic model of the system is characterized by M and</span>
+        <span class="comment">% C</span>
+        Mmat = [a+2*b*cos(x(2)), d+b*cos(x(2));  d+b*cos(x(2)), d];
+        Cmat = [-b*sin(x(2))*x(4), -b*sin(x(2))*(x(3)+x(4)); b*sin(x(2))*x(3),0];
+        invM = inv(Mmat);
+        invMC = invM*Cmat;
+        <span class="comment">% M upper bound</span>
+        a_u = I1+I2+(15/12)+m1*r1^2+ (m2+10)*(l1^2+ (r2+0.5)^2);
+        b_u = (m2+10)*l1*(r2+0.5);
+        d_u = I2+(15/12)+ (m2+10)*(r2+0.5)^2;
+        M_u = [a_u+2*b_u*cos(x(2)), d_u+b_u*cos(x(2));  d_u+b_u*cos(x(2)), d_u];
+        C_u = [-b_u*sin(x(2))*x(4), -b_u*sin(x(2))*(x(3)+x(4)); b_u*sin(x(2))*x(3),0];
+        <span class="comment">% M lower Bound</span>
+        a_l = I1+I2+m1*r1^2+ m2*(l1^2+ r2^2);
+        b_l = m2*l1*r2;
+        d_l = I2+m2*r2^2;
+        M_l = [a_l+2*b_l*cos(x(2)), d_l+b_l*cos(x(2));  d_l+b_l*cos(x(2)), d_l];
+        C_l = [-b_l*sin(x(2))*x(4), -b_l*sin(x(2))*(x(3)+x(4)); b_l*sin(x(2))*x(3),0];
+        <span class="comment">% M_bar = 2/(Mu+Ml)</span>
+        M_bar = 2* inv(M_u + M_l);
+        b_bar = (M_bar(2,1)-M_bar(2,2))/cos(x(2));
+        C_bar = [-b_bar*sin(x(2))*x(4), -b_bar*sin(x(2))*(x(3)+x(4)); b_bar*sin(x(2))*x(3),0];
+</pre><h2 id="12">Calculating value of V</h2><pre class="codeinput">        e = theta - theta_d;
+        e_dot = dtheta - dtheta_d;
+        xe1 = [e(1);e_dot(1)];
+        xe2 = [e(2);e_dot(2)];
+        P = [1 0;0 1];
+        B = [0;1];
+        gamma_1 = 15;
+        gamma_2 = 25;
+        gamma_3 = 35;
+        alpha = 0.99;
+        rho1 = (1/(1-alpha))*(gamma_1*norm(xe1') + (gamma_2)*(norm(xe2').^2)+gamma_3);
+        rho2 = (1/(1-alpha))*(gamma_1*norm(xe2') + (gamma_2)*(norm(xe2').^2)+gamma_3);
+        rho = [rho1,0;
+              0,rho2];
+        w = [B'*P*xe1;B'*P*xe2];<span class="comment">% according to the slides</span>
+        epsilon = 3;
+        <span class="keyword">if</span> norm(w)&gt; epsilon
+            v = - rho*(w/norm(w));
+        <span class="keyword">else</span>
+            v = -rho*(w/epsilon);
+        <span class="keyword">end</span>
+        <span class="comment">%TODO: compute the robust controller to avoid chattering.</span>
+        aq = ddtheta_d - Kp*e - Kd*e_dot + v;
+        q_d_dot=(invM*(M_bar*aq + C_bar*dtheta));
+        <span class="comment">%TODO: update the system state, compute dx</span>
+        dx=zeros(4,1);
+        dx(1) = x(3);
+        dx(2) = x(4);
+        dx(3) = q_d_dot(1);
+        dx(4) = q_d_dot(2);
+<span class="comment">%         dx(3:4) = -invMC* x(3:4) +invM*tau; % because ddot theta = -M^{-1}(C \dot Theta) + M^{-1} tau</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function []= robustControl(theta10,theta20,dtheta10, dtheta20,theta1f, theta2f,dtheta1f,dtheta2f,tf)
+
+% Robust control design for 2-D planar arm.
+% input: initial and final state.
+% output: Demostrate the performance of robust controller with parameter
+% uncertainty.
+% the nominal model parameter:
+m1 =10; m2=5; l1=1; l2=1; r1=0.5; r2 =.5; I1=10/12; I2=5/12; % parameters in the paper.
+% the nominal parameter vector b0 is
+b0 = [ m1* r1^2 + m2*l1^2 + I1; m2*r2^2 + I2; m2*l1*r2];
+
+
+%% Trajectory planning block
+% Initial condition (TODO: CHANGE DIFFERENT INITIAL AND FINAL STATES)
+x0=[-0.5,0,-1,0.1];
+x0e = [-0.7,0.5,-0.2,0]; % an error in the initial state.
+xf=[0.8,0.5, 0, 0];
+% The parameter for planned joint trajectory 1 and 2.
+global a1 a2 % two polynomial trajectory for the robot joint
+nofigure=1;
+% Traj generation.
+a1 = planarArmTraj(theta10,dtheta10, theta1f, dtheta1f,tf, nofigure);
+a2 = planarArmTraj(theta20,dtheta20, theta2f, dtheta2f,tf, nofigure);
+
+
+torque=[];
+options = odeset('RelTol',1e-4,'AbsTol',[1e-4, 1e-4, 1e-4, 1e-4]);
+%% TODO: IMPLEMENT THE CONTROLLER
+ [T,X] = ode45(@(t,x)planarArmODERobust(t,x),[0 tf],x0e,options);
+figure('Name','theta1');
+plot(T, X(:,1),'r-');
+hold on
+plot(T, a1(1)+a1(2)*T+ a1(3)*T.^2+a1(4)*T.^3,'b-')
+title('Theta_1 under Robust Control');
+figure('Name','theta2');
+plot(T, X(:,2),'r-');
+hold on
+plot(T, a2(1)+a2(2)*T+ a2(3)*T.^2+a2(4)*T.^3, 'b-');
+title('Theta_2 under Robust Control');
+%% TODO: IMPLEMENT THE CONTROLLER TO AVOID CHATTERING.
+[T1,X1] = ode45(@(t,x)planarArmODERobustApprx(t,x),[0 tf],x0e,options);
+
+figure('Name','theta1');
+plot(T1, X1(:,1),'r-');
+hold on
+plot(T1, a1(1)+a1(2)*T1+ a1(3)*T1.^2+a1(4)*T1.^3,'b-')
+title('Theta_1 under Robust Control');
+figure('Name','theta2');
+plot(T1, X1(:,2),'r-');
+hold on
+plot(T1, a2(1)+a2(2)*T1+ a2(3)*T1.^2+a2(4)*T1.^3, 'b-');
+title('Theta_2 under Robust Control');
+
+%TODO: PLOT THE INPUT TRAJECTORY
+
+
+
+
+    function [dx ] = planarArmODERobust(t,x)
+        %Todo: Select your feedback gain matrix Kp and Kd.
+        Kp = eye(2)*80;
+        Kd = eye(2)*10;
+        % Compute the desired state and their time derivatives from planned
+        % trajectory.
+        vec_t = [1; t; t^2; t^3]; % cubic polynomials
+        theta_d= [a1'*vec_t; a2'*vec_t];
+        %ref = [ref,theta_d];
+        % compute the velocity and acceleration in both theta 1 and theta2.
+        a1_vel = [a1(2), 2*a1(3), 3*a1(4), 0];
+        a1_acc = [2*a1(3), 6*a1(4),0,0 ];
+        a2_vel = [a2(2), 2*a2(3), 3*a2(4), 0];
+        a2_acc = [2*a2(3), 6*a2(4),0,0 ];
+        dtheta_d =[a1_vel*vec_t; a2_vel* vec_t];
+        ddtheta_d =[a2_acc*vec_t; a2_acc* vec_t];
+        theta= x(1:2,1);
+        dtheta= x(3:4,1);
+
+        %% Calculating the Mbar
+        % M upper bound
+        a_u = I1+I2+(15/12)+m1*r1^2+ (m2+10)*(l1^2+ (r2+0.5)^2);
+        b_u = (m2+10)*l1*(r2+0.5);
+        d_u = I2+(15/12)+ (m2+10)*(r2+0.5)^2;
+        M_u = [a_u+2*b_u*cos(x(2)), d_u+b_u*cos(x(2));  d_u+b_u*cos(x(2)), d_u];
+        C_u = [-b_u*sin(x(2))*x(4), -b_u*sin(x(2))*(x(3)+x(4)); b_u*sin(x(2))*x(3),0];
+        % M lower Bound
+        a_l = I1+I2+m1*r1^2+ m2*(l1^2+ r2^2);
+        b_l = m2*l1*r2;
+        d_l = I2+m2*r2^2;
+        M_l = [a_l+2*b_l*cos(x(2)), d_l+b_l*cos(x(2));  d_l+b_l*cos(x(2)), d_l];
+        C_l = [-b_l*sin(x(2))*x(4), -b_l*sin(x(2))*(x(3)+x(4)); b_l*sin(x(2))*x(3),0];
+        % M_bar = 2/(Mu+Ml)
+        M_bar = 2* inv(M_u + M_l);
+        b_bar = (M_bar(2,1)-M_bar(2,2))/cos(x(2));
+        C_bar = [-b_bar*sin(x(2))*x(4), -b_bar*sin(x(2))*(x(3)+x(4)); b_bar*sin(x(2))*x(3),0];
+        %the true model
+        m2t = m2+ 10*rand(1);% m1 true value is in [m1, m1+epsilon_m1] and epsilon_m1 a random number in [0,10];
+        r2t = r2 + 0.5*rand(1);
+        I2t = I2 + (15/12)*rand(1);
+
+        a = I1+I2+m1*r1^2+ m2t*(l1^2+ r2t^2);
+        b = m2t*l1*r2t;
+        d = I2t+ m2t*r2t^2;
+
+
+        % the actual dynamic model of the system is characterized by M and
+        % C
+        Mmat = [a+2*b*cos(x(2)), d+b*cos(x(2));  d+b*cos(x(2)), d];
+        Cmat = [-b*sin(x(2))*x(4), -b*sin(x(2))*(x(3)+x(4)); b*sin(x(2))*x(3),0];
+        invM = inv(Mmat);
+        invMC = invM*Cmat;
+
+        %% Calculating Value of V for the controller
+        e = theta - theta_d;
+        e_dot = dtheta - dtheta_d;
+        xe1 = [e(1);e_dot(1)];
+        xe2 = [e(2);e_dot(2)];
+        P = [1 0;0 1];
+        B = [0;1];
+        gamma_1 = 100;
+        gamma_2 = 200;
+        gamma_3 = 300;
+        alpha = 0.5;
+        rho1 = (1/(1-alpha))*(gamma_1*norm(xe1')+gamma_2*(norm(xe2').^2)+gamma_3);
+        rho2 = (1/(1-alpha))*(gamma_1*norm(xe2')+gamma_2*(norm(xe2').^2)+gamma_3);
+        v = [-xe1'*P*B*rho1/norm(xe1'*P*B);-xe2'*P*B*rho2/norm(xe2'*P*B)];
+
+        %% TODO: compute the robust controller
+        aq = ddtheta_d - Kp*e - Kd*e_dot + v;
+        q_d_dot=(invM*(M_bar*aq + C_bar*dtheta));
+        %TODO: update the system state, compute dx
+        dx=zeros(4,1);
+        dx(1) = x(3);
+        dx(2) = x(4);
+        dx(3) = q_d_dot(1);
+        dx(4) = q_d_dot(2);
+%         dx(3:4) = -invMC* x(3:4) +invM*tau; % because ddot theta = -M^{-1}(C \dot Theta) + M^{-1} tau
+    end
+
+
+
+        function [dx ] = planarArmODERobustApprx(t,x)
+        %Todo: Select your feedback gain matrix Kp and Kd.
+        Kp = eye(2)*100;
+        Kd = eye(2)*10;
+        % Compute the desired state and their time derivatives from planned
+        % trajectory.
+        vec_t = [1; t; t^2; t^3]; % cubic polynomials
+        theta_d= [a1'*vec_t; a2'*vec_t];
+        %ref = [ref,theta_d];
+        % compute the velocity and acceleration in both theta 1 and theta2.
+        a1_vel = [a1(2), 2*a1(3), 3*a1(4), 0];
+        a1_acc = [2*a1(3), 6*a1(4),0,0 ];
+        a2_vel = [a2(2), 2*a2(3), 3*a2(4), 0];
+        a2_acc = [2*a2(3), 6*a2(4),0,0 ];
+        dtheta_d =[a1_vel*vec_t; a2_vel* vec_t];
+        ddtheta_d =[a2_acc*vec_t; a2_acc* vec_t];
+        theta= x(1:2,1);
+        dtheta= x(3:4,1);
+
+        %the true model
+        m2t = m2+ 10*rand(1);% m1 true value is in [m1, m1+epsilon_m1] and epsilon_m1 a random number in [0,10];
+        r2t = r2 + 0.5*rand(1);
+        I2t = I2 + (15/12)*rand(1);
+
+        a = I1+I2+m1*r1^2+ m2t*(l1^2+ r2t^2);
+        b = m2t*l1*r2t;
+        d = I2t+ m2t*r2t^2;
+        % the actual dynamic model of the system is characterized by M and
+        % C
+        Mmat = [a+2*b*cos(x(2)), d+b*cos(x(2));  d+b*cos(x(2)), d];
+        Cmat = [-b*sin(x(2))*x(4), -b*sin(x(2))*(x(3)+x(4)); b*sin(x(2))*x(3),0];
+        invM = inv(Mmat);
+        invMC = invM*Cmat;
+        % M upper bound
+        a_u = I1+I2+(15/12)+m1*r1^2+ (m2+10)*(l1^2+ (r2+0.5)^2);
+        b_u = (m2+10)*l1*(r2+0.5);
+        d_u = I2+(15/12)+ (m2+10)*(r2+0.5)^2;
+        M_u = [a_u+2*b_u*cos(x(2)), d_u+b_u*cos(x(2));  d_u+b_u*cos(x(2)), d_u];
+        C_u = [-b_u*sin(x(2))*x(4), -b_u*sin(x(2))*(x(3)+x(4)); b_u*sin(x(2))*x(3),0];
+        % M lower Bound
+        a_l = I1+I2+m1*r1^2+ m2*(l1^2+ r2^2);
+        b_l = m2*l1*r2;
+        d_l = I2+m2*r2^2;
+        M_l = [a_l+2*b_l*cos(x(2)), d_l+b_l*cos(x(2));  d_l+b_l*cos(x(2)), d_l];
+        C_l = [-b_l*sin(x(2))*x(4), -b_l*sin(x(2))*(x(3)+x(4)); b_l*sin(x(2))*x(3),0];
+        % M_bar = 2/(Mu+Ml)
+        M_bar = 2* inv(M_u + M_l);
+        b_bar = (M_bar(2,1)-M_bar(2,2))/cos(x(2));
+        C_bar = [-b_bar*sin(x(2))*x(4), -b_bar*sin(x(2))*(x(3)+x(4)); b_bar*sin(x(2))*x(3),0];
+        %% Calculating value of V
+        e = theta - theta_d;
+        e_dot = dtheta - dtheta_d;
+        xe1 = [e(1);e_dot(1)];
+        xe2 = [e(2);e_dot(2)];
+        P = [1 0;0 1];
+        B = [0;1];
+        gamma_1 = 15;
+        gamma_2 = 25;
+        gamma_3 = 35;
+        alpha = 0.99;
+        rho1 = (1/(1-alpha))*(gamma_1*norm(xe1') + (gamma_2)*(norm(xe2').^2)+gamma_3);
+        rho2 = (1/(1-alpha))*(gamma_1*norm(xe2') + (gamma_2)*(norm(xe2').^2)+gamma_3);
+        rho = [rho1,0;
+              0,rho2];
+        w = [B'*P*xe1;B'*P*xe2];% according to the slides
+        epsilon = 3;
+        if norm(w)> epsilon
+            v = - rho*(w/norm(w));
+        else
+            v = -rho*(w/epsilon);
+        end
+        %TODO: compute the robust controller to avoid chattering.
+        aq = ddtheta_d - Kp*e - Kd*e_dot + v;
+        q_d_dot=(invM*(M_bar*aq + C_bar*dtheta));
+        %TODO: update the system state, compute dx
+        dx=zeros(4,1);
+        dx(1) = x(3);
+        dx(2) = x(4);
+        dx(3) = q_d_dot(1);
+        dx(4) = q_d_dot(2);
+%         dx(3:4) = -invMC* x(3:4) +invM*tau; % because ddot theta = -M^{-1}(C \dot Theta) + M^{-1} tau
+        end
+end
+
+##### SOURCE END #####
+--></body></html>
