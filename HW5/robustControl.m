@@ -31,25 +31,25 @@ figure('Name','theta1');
 plot(T, X(:,1),'r-');
 hold on
 plot(T, a1(1)+a1(2)*T+ a1(3)*T.^2+a1(4)*T.^3,'b-')
-title('Theta_1 under Robust Control1');
+title('Theta_1 under Robust Control');
 figure('Name','theta2');
 plot(T, X(:,2),'r-');
 hold on
 plot(T, a2(1)+a2(2)*T+ a2(3)*T.^2+a2(4)*T.^3, 'b-');
 title('Theta_2 under Robust Control');
 %% TODO: IMPLEMENT THE CONTROLLER TO AVOID CHATTERING.
-% [T1,X1] = ode45(@(t,x)planarArmODERobustApprx(t,x),[0 tf],x0e,options);
-%
-% figure('Name','theta1');
-% plot(T1, X1(:,1),'r-');
-% hold on
-% plot(T1, a1(1)+a1(2)*T1+ a1(3)*T1.^2+a1(4)*T1.^3,'b-')
-% title('Theta_1 under Robust Control');
-% figure('Name','theta2');
-% plot(T1, X1(:,2),'r-');
-% hold on
-% plot(T1, a2(1)+a2(2)*T1+ a2(3)*T1.^2+a2(4)*T1.^3, 'b-');
-% title('Theta_2 under Robust Control');
+[T1,X1] = ode45(@(t,x)planarArmODERobustApprx(t,x),[0 tf],x0e,options);
+
+figure('Name','theta1');
+plot(T1, X1(:,1),'r-');
+hold on
+plot(T1, a1(1)+a1(2)*T1+ a1(3)*T1.^2+a1(4)*T1.^3,'b-')
+title('Theta_1 under Robust Control (Avoiding chattering)');
+figure('Name','theta2');
+plot(T1, X1(:,2),'r-');
+hold on
+plot(T1, a2(1)+a2(2)*T1+ a2(3)*T1.^2+a2(4)*T1.^3, 'b-');
+title('Theta_2 under Robust Control(Avoiding chattering)');
 
 %TODO: PLOT THE INPUT TRAJECTORY
 
@@ -58,8 +58,8 @@ title('Theta_2 under Robust Control');
 
     function [dx ] = planarArmODERobust(t,x)
         %Todo: Select your feedback gain matrix Kp and Kd.
-        Kp = eye(2)*2000;
-        Kd = eye(2)*1000;
+        Kp = eye(2)*1000;
+        Kd = eye(2)*500;
         % Compute the desired state and their time derivatives from planned
         % trajectory.
         vec_t = [1; t; t^2; t^3]; % cubic polynomials
@@ -115,15 +115,19 @@ title('Theta_2 under Robust Control');
         xe1 = [e(1),e_dot(1)];
         xe2 = [e(2),e_dot(2)];
         P = [1 0; 0 1];
-        B = [0;1];
-        gamma_1 = 1.1;
-        gamma_2 = 2.1;
-        gamma_3 = 3.1;
-        alpha = 0.1;
-        rho1 = (1/(1-alpha))*(gamma_1*norm(xe1)+gamma_2*(norm(xe2).^2)+gamma_3);
+        B = [0; 1];
+        gamma_1 = 0.5;
+        gamma_2 = 0.5;
+        gamma_3 = 0.5;
+        alpha = 0;
+        rho1 = (1/(1-alpha))*(gamma_1*norm(xe1)+gamma_2*(norm(xe1).^2)+gamma_3);
         rho2 = (1/(1-alpha))*(gamma_1*norm(xe2)+gamma_2*(norm(xe2).^2)+gamma_3);
-        v = [-xe1*P*B*rho1/norm(xe1*P*B);-xe2*P*B*rho2/norm(xe2*P*B)];
-
+        w = [xe1*P*B;xe2*P*B];
+        if norm(w) ~=0
+          v = [-xe1*P*B*rho1/norm(xe1*P*B);-xe2*P*B*rho2/norm(xe2*P*B)];
+        else
+          v = [0;0];
+        end
         %% TODO: compute the robust controller
         aq = ddtheta_d - Kp*e - Kd*e_dot + v;
         q_d_dot=(invM*(M_bar*aq + C_bar*dtheta));
@@ -140,8 +144,8 @@ title('Theta_2 under Robust Control');
 
         function [dx ] = planarArmODERobustApprx(t,x)
         %Todo: Select your feedback gain matrix Kp and Kd.
-        Kp = eye(2)*1500;
-        Kd = eye(2)*1000;
+        Kp = eye(2)*1000;
+        Kd = eye(2)*500;
         % Compute the desired state and their time derivatives from planned
         % trajectory.
         vec_t = [1; t; t^2; t^3]; % cubic polynomials
@@ -194,16 +198,16 @@ title('Theta_2 under Robust Control');
         xe2 = [e(2);e_dot(2)];
         P = [1 0;0 1];
         B = [0;1];
-        gamma_1 = 15000;
-        gamma_2 = 25000;
-        gamma_3 = 35000;
-        alpha = 0.85;
+        gamma_1 = 0.5;
+        gamma_2 = 0.5;
+        gamma_3 = 0.5;
+        alpha = 0;
         rho1 = (1/(1-alpha))*(gamma_1*norm(xe1') + (gamma_2)*(norm(xe2').^2)+gamma_3);
         rho2 = (1/(1-alpha))*(gamma_1*norm(xe2') + (gamma_2)*(norm(xe2').^2)+gamma_3);
         rho = [rho1,0;
               0,rho2];
         w = [B'*P*xe1;B'*P*xe2];% according to the slides
-        epsilon = 2;
+        epsilon = 0.2;
         if norm(w)> epsilon
             v = - rho*(w/norm(w));
         else

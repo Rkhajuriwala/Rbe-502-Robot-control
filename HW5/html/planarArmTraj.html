@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>testing algorithm with a set of initial and final states.</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-04-09"><meta name="DC.source" content="test1.m"><style type="text/css">
+      --><title>Trajectory planning using polynomial functions.</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-04-09"><meta name="DC.source" content="planarArmTraj.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,45 +66,84 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>testing algorithm with a set of initial and final states.</h1><pre class="codeinput">clc
-clear <span class="string">all</span>
-close <span class="string">all</span>
-<span class="comment">%Example to demostrate the robust control with planar 2d arm.</span>
-theta10=-0.5;
-dtheta10 =0;
-theta1f = 0.8;
-dtheta1f=0;
-tf=20;
+  </style></head><body><div class="content"><h1>Trajectory planning using polynomial functions.</h1><pre class="codeinput"><span class="keyword">function</span> [a] = planarArmTraj(theta10,dtheta10, theta1f, dtheta1f,tf, nofigure)
+<span class="comment">% Input: Initial and final position and velocities, planning horizon [0,tf]</span>
+<span class="comment">% nofigure=1 then do not output the planned trajectory.</span>
+<span class="comment">% Cubic polynomial trajectory.</span>
 
-<span class="comment">% plan a trajectory to reach target postion given by theta1f, dot theta1f,</span>
-<span class="comment">% theta2f, dot theta2f.</span>
-theta20=-1;
-dtheta20= 0.1;
-theta2f = 0.5;
-dtheta2f=0;
+<span class="comment">% formulate the linear equation and solve.</span>
+M= [1 0 0 0;
+    0 1 0 0;
+    1 tf tf^2 tf^3;
+    0 1 2*tf 3*tf^2];
+b=[theta10; dtheta10;theta1f; dtheta1f];
+a=M\b;
+t=0:0.01:tf;
 
-robustControl(theta10,theta20,dtheta10, dtheta20,theta1f, theta2f,dtheta1f,dtheta2f,tf)<span class="comment">%plan_control(theta10,theta20,dtheta10, dtheta20,theta1f, theta2f,dtheta1f,dtheta2f,tf)</span>
-</pre><img vspace="5" hspace="5" src="test1_01.png" alt=""> <img vspace="5" hspace="5" src="test1_02.png" alt=""> <img vspace="5" hspace="5" src="test1_03.png" alt=""> <img vspace="5" hspace="5" src="test1_04.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+<span class="keyword">if</span> nofigure==1
+    <span class="keyword">return</span>
+<span class="keyword">else</span>
+
+figure(<span class="string">'Name'</span>,<span class="string">'Position (degree)'</span>);
+plot(t,a(1)+a(2)*t+ a(3)*t.^2+a(4)*t.^3,<span class="string">'LineWidth'</span>,3);
+title(<span class="string">'Position (degree)'</span>)
+grid
+
+figure(<span class="string">'Name'</span>,<span class="string">'Velocity (degree/s)'</span>);
+plot(t,a(2)*t+ 2*a(3)*t +3*a(4)*t.^2,<span class="string">'LineWidth'</span>,3);
+title(<span class="string">'Velocity (degree/s)'</span>)
+grid
+
+figure(<span class="string">'Name'</span>,<span class="string">'Acceleration (degree/s^2)'</span>);
+plot(t, 2*a(3) +6*a(4)*t,<span class="string">'LineWidth'</span>,3);
+title(<span class="string">'Acceleration (degree/s^2)'</span>)
+grid
+<span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in planarArmTraj (line 10)
+    1 tf tf^2 tf^3;
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% testing algorithm with a set of initial and final states.
-clc
-clear all
-close all
-%Example to demostrate the robust control with planar 2d arm.
-theta10=-0.5;
-dtheta10 =0; 
-theta1f = 0.8;
-dtheta1f=0;
-tf=20;
+%% Trajectory planning using polynomial functions.
+function [a] = planarArmTraj(theta10,dtheta10, theta1f, dtheta1f,tf, nofigure)
+% Input: Initial and final position and velocities, planning horizon [0,tf]
+% nofigure=1 then do not output the planned trajectory.
+% Cubic polynomial trajectory.
 
-% plan a trajectory to reach target postion given by theta1f, dot theta1f,
-% theta2f, dot theta2f.
-theta20=-1;
-dtheta20= 0.1; 
-theta2f = 0.5;
-dtheta2f=0;
+% formulate the linear equation and solve.
+M= [1 0 0 0;
+    0 1 0 0;
+    1 tf tf^2 tf^3;
+    0 1 2*tf 3*tf^2];
+b=[theta10; dtheta10;theta1f; dtheta1f];
+a=M\b;
+t=0:0.01:tf;
 
-robustControl(theta10,theta20,dtheta10, dtheta20,theta1f, theta2f,dtheta1f,dtheta2f,tf)%plan_control(theta10,theta20,dtheta10, dtheta20,theta1f, theta2f,dtheta1f,dtheta2f,tf)
+if nofigure==1
+    return
+else
+
+figure('Name','Position (degree)');
+plot(t,a(1)+a(2)*t+ a(3)*t.^2+a(4)*t.^3,'LineWidth',3);
+title('Position (degree)')
+grid
+
+figure('Name','Velocity (degree/s)');
+plot(t,a(2)*t+ 2*a(3)*t +3*a(4)*t.^2,'LineWidth',3);
+title('Velocity (degree/s)')
+grid
+
+figure('Name','Acceleration (degree/s^2)');
+plot(t, 2*a(3) +6*a(4)*t,'LineWidth',3);
+title('Acceleration (degree/s^2)')
+grid
+end
+end
+
+
+
 
 ##### SOURCE END #####
 --></body></html>

@@ -7,7 +7,7 @@ theta10=-0.5;
 dtheta10 =0; 
 theta1f = 0.8;
 dtheta1f=0;
-tf=2;
+tf=20;
 
 % plan a trajectory to reach target postion given by theta1f, dot theta1f,
 % theta2f, dot theta2f.
