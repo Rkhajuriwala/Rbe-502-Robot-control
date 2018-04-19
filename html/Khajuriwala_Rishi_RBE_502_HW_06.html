@@ -1,0 +1,240 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Khajuriwala_Rishi_RBE_502_HW_06</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-04-18"><meta name="DC.source" content="Khajuriwala_Rishi_RBE_502_HW_06.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput">clc;
+close <span class="string">all</span>;
+clear <span class="string">all</span>;
+
+x0 = [0.1,0.1, 8, 2.5,5];
+tf = 300;
+<span class="keyword">global</span> I mgd fv
+I = 7.5;
+mgd = 6;
+fv = 1.5;
+
+
+options = odeset(<span class="string">'RelTol'</span>,1e-4,<span class="string">'AbsTol'</span>,[1e-4, 1e-4, 1e-4, 1e-4,1e-4]);
+[T,X] = ode45(@(t,x)passAdapControl(t,x),[0 tf],x0, options);
+
+figure(<span class="string">'Name'</span>,<span class="string">'Theta under Passive Adaptive Control'</span>);
+plot(T, X(:,1),<span class="string">'r'</span>);
+hold <span class="string">on</span>
+plot(T, -sin(T),<span class="string">'b--'</span>);
+figure(<span class="string">'Name'</span>,<span class="string">'Theta dot under Passive Adaptive Control'</span>);
+plot(T, X(:,2),<span class="string">'r'</span>);
+hold <span class="string">on</span>
+plot(T, -cos(T),<span class="string">'b--'</span>);
+figure(<span class="string">'Name'</span>,<span class="string">'I_bar under Passive Adaptive Control'</span>);
+plot(T, X(:,3),<span class="string">'r'</span>);
+hold <span class="string">on</span>
+plot(T, I*ones(size(T,1),1),<span class="string">'b--'</span>);
+figure(<span class="string">'Name'</span>,<span class="string">'fv_bar under Passive Adaptive Control'</span>);
+plot(T, X(:,4),<span class="string">'r'</span>);
+hold <span class="string">on</span>
+plot(T, fv*ones(size(T,1),1),<span class="string">'b--'</span>);
+figure(<span class="string">'Name'</span>,<span class="string">'mgd_bar under Passive Adaptive Control'</span>);
+plot(T, X(:,5),<span class="string">'r'</span>);
+hold <span class="string">on</span>
+plot(T, mgd*ones(size(T,1),1),<span class="string">'b--'</span>);
+
+<span class="keyword">function</span> [tau] = Tau(q,q_d,dq,dq_d,ddq_d)
+
+<span class="comment">%Slide 7 function is  based on the slides on passivity_control</span>
+Kv = 2500;
+e = q - q_d;
+e_d = dq - dq_d;
+lamda = 2.1; <span class="comment">%Lamba</span>
+
+<span class="keyword">global</span> a v r m_bar c_bar n_bar
+a = ddq_d - lamda*e_d;
+v = dq_d - lamda *e;
+r = e_d +lamda * e;
+tau = m_bar*a + c_bar*v + n_bar -Kv*r;
+
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> [dx] = passAdapControl(t,x)
+q_d = -sin(t);
+dq_d = -cos(t);
+ddq_d = sin(t);
+
+q = x(1,1);
+dq = x(2,1);
+<span class="keyword">global</span> I mgd fv m_bar c_bar n_bar a v r
+
+M = I;
+C = fv;
+N = mgd*sin(q);
+
+
+
+m_bar = x(3,1);
+c_bar = x(4,1);
+n_bar = x(5,1)*sin(q);
+
+tau = Tau(q,q_d,dq,dq_d,ddq_d);
+P = 0.005*eye(3);
+dx=zeros(5,1);
+dx(1) = x(2);
+dx(2) = -inv(M)*(C*x(2) + N - tau);
+
+Y = [a, v, sin(q)];
+dx(3:5) = -inv(P)*transpose(Y)*r;
+
+
+
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Khajuriwala_Rishi_RBE_502_HW_06_01.png" alt=""> <img vspace="5" hspace="5" src="Khajuriwala_Rishi_RBE_502_HW_06_02.png" alt=""> <img vspace="5" hspace="5" src="Khajuriwala_Rishi_RBE_502_HW_06_03.png" alt=""> <img vspace="5" hspace="5" src="Khajuriwala_Rishi_RBE_502_HW_06_04.png" alt=""> <img vspace="5" hspace="5" src="Khajuriwala_Rishi_RBE_502_HW_06_05.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clc;
+close all;
+clear all;
+
+x0 = [0.1,0.1, 8, 2.5,5];
+tf = 300;
+global I mgd fv
+I = 7.5;
+mgd = 6;
+fv = 1.5;
+
+
+options = odeset('RelTol',1e-4,'AbsTol',[1e-4, 1e-4, 1e-4, 1e-4,1e-4]);
+[T,X] = ode45(@(t,x)passAdapControl(t,x),[0 tf],x0, options);
+
+figure('Name','Theta under Passive Adaptive Control');
+plot(T, X(:,1),'r');
+hold on
+plot(T, -sin(T),'bREPLACE_WITH_DASH_DASH');
+figure('Name','Theta dot under Passive Adaptive Control');
+plot(T, X(:,2),'r');
+hold on
+plot(T, -cos(T),'bREPLACE_WITH_DASH_DASH');
+figure('Name','I_bar under Passive Adaptive Control');
+plot(T, X(:,3),'r');
+hold on
+plot(T, I*ones(size(T,1),1),'bREPLACE_WITH_DASH_DASH');
+figure('Name','fv_bar under Passive Adaptive Control');
+plot(T, X(:,4),'r');
+hold on
+plot(T, fv*ones(size(T,1),1),'bREPLACE_WITH_DASH_DASH');
+figure('Name','mgd_bar under Passive Adaptive Control');
+plot(T, X(:,5),'r');
+hold on
+plot(T, mgd*ones(size(T,1),1),'bREPLACE_WITH_DASH_DASH');
+
+function [tau] = Tau(q,q_d,dq,dq_d,ddq_d)
+  
+%Slide 7 function is  based on the slides on passivity_control
+Kv = 2500;
+e = q - q_d;
+e_d = dq - dq_d;
+lamda = 2.1; %Lamba
+
+global a v r m_bar c_bar n_bar
+a = ddq_d - lamda*e_d;
+v = dq_d - lamda *e;
+r = e_d +lamda * e;
+tau = m_bar*a + c_bar*v + n_bar -Kv*r;
+
+end
+
+function [dx] = passAdapControl(t,x)
+q_d = -sin(t);
+dq_d = -cos(t);
+ddq_d = sin(t);
+
+q = x(1,1);
+dq = x(2,1);
+global I mgd fv m_bar c_bar n_bar a v r
+
+M = I;
+C = fv;
+N = mgd*sin(q);
+
+
+
+m_bar = x(3,1);
+c_bar = x(4,1);
+n_bar = x(5,1)*sin(q);
+
+tau = Tau(q,q_d,dq,dq_d,ddq_d);
+P = 0.005*eye(3);
+dx=zeros(5,1);
+dx(1) = x(2);
+dx(2) = -inv(M)*(C*x(2) + N - tau);
+
+Y = [a, v, sin(q)];
+dx(3:5) = -inv(P)*transpose(Y)*r;
+
+
+
+end
+
+
+##### SOURCE END #####
+--></body></html>
