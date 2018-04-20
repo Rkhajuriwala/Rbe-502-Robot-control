@@ -66,9 +66,25 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><pre class="codeinput">clc;
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FOr getting the model for Y, i did the following derivation</a></li></ul></div><pre class="codeinput">clc;
 close <span class="string">all</span>;
 clear <span class="string">all</span>;
+</pre><h2 id="2">FOr getting the model for Y, i did the following derivation</h2><pre class="codeinput"><span class="comment">%dq = q dot</span>
+<span class="comment">%dr = r dot</span>
+<span class="comment">% M(q)ddq + C(q,dq)dq +N(q) = Tau</span>
+<span class="comment">% Tau = M_bar(q)*a+ C_bar(q,dq)*v + N_bar(q) - Kv*r</span>
+<span class="comment">% On equating the above eqs</span>
+<span class="comment">% M(q)ddq + C(q,dq)dq +N(q) = M_bar(q)*a+ C_bar(q,dq)*v + N_bar(q) - Kv*r</span>
+<span class="comment">% ddq = a + dr</span>
+<span class="comment">% dq = v + r</span>
+<span class="comment">%</span>
+<span class="comment">% M(q)(a + dr) + C(q,dq)(v + r) +N(q) = M_bar(q)*a+ C_bar(q,dq)*v + N_bar(q) - Kv*r</span>
+<span class="comment">% M(q)(dr) + C(q,dq)(r) + Kv*r = (M_bar- M)*a+ (C_bar- C)*v + (N_bar- N)(q)</span>
+<span class="comment">% M(q)(dr) + C(q,dq)(r) + Kv*r = Y(a,v,q)*q_tilda</span>
+<span class="comment">%where Y = [a,v,sin(theta)] and</span>
+<span class="comment">%q_tilda= [(I_bar - I);</span>
+<span class="comment">%          (fv_bar - fv);</span>
+<span class="comment">%          (mgd_bar - mgd)]</span>
 
 x0 = [0.1,0.1, 8, 2.5,5];
 tf = 300;
@@ -154,6 +170,23 @@ dx(3:5) = -inv(P)*transpose(Y)*r;
 clc;
 close all;
 clear all;
+%% FOr getting the model for Y, i did the following derivation
+%dq = q dot
+%dr = r dot
+% M(q)ddq + C(q,dq)dq +N(q) = Tau
+% Tau = M_bar(q)*a+ C_bar(q,dq)*v + N_bar(q) - Kv*r
+% On equating the above eqs
+% M(q)ddq + C(q,dq)dq +N(q) = M_bar(q)*a+ C_bar(q,dq)*v + N_bar(q) - Kv*r
+% ddq = a + dr
+% dq = v + r
+%
+% M(q)(a + dr) + C(q,dq)(v + r) +N(q) = M_bar(q)*a+ C_bar(q,dq)*v + N_bar(q) - Kv*r
+% M(q)(dr) + C(q,dq)(r) + Kv*r = (M_bar- M)*a+ (C_bar- C)*v + (N_bar- N)(q)
+% M(q)(dr) + C(q,dq)(r) + Kv*r = Y(a,v,q)*q_tilda
+%where Y = [a,v,sin(theta)] and 
+%q_tilda= [(I_bar - I);
+%          (fv_bar - fv);
+%          (mgd_bar - mgd)]
 
 x0 = [0.1,0.1, 8, 2.5,5];
 tf = 300;
