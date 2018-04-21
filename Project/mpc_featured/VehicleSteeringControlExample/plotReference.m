@@ -19,9 +19,14 @@ grid on
 hold on
 
 % Plot the obstacles to avoid.
-obstacleX = [10,25,10,25,55,65,55,65,120,180,120,180];
-obstacleY = [2,2,-1,-1,2.5,2.5,5.5,5.5,1,1,-4,-4];
-scatter(obstacleX,obstacleY,'r');
+obstacleX = 150;
+obstacleY = -3.296;
+
+% obstacleX = [10,25,10,25,55,65,55,65,120,180,120,180];
+% obstacleY = [2,2,-1,-1,2.5,2.5,5.5,5.5,1,1,-4,-4];
+scatter(obstacleX,obstacleY,'r')
+% plot(obstacleX,obstacleY);
+rectangle('Position',[obstacleX-2,obstacleY-2,4,4]);
 legend('reference','obstacles')
 xlabel('X (m)')
 ylabel('Y (m)')

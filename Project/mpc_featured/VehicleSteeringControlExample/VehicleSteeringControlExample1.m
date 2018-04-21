@@ -120,6 +120,10 @@ open_system(mdl)
 Ts = 0.1;
 mpc1 = mpc(vehicle,Ts);
 
+mpc1.PredictionHorizon = 10;
+mpc1.ControlHorizon = 2;
+mpc1.Optimizer.CustomCostFcn = true;
+
 %%
 % For this controller, there is one manipulated variable (front steering
 % angle $\delta$) and there are two output variables ($Y$ position and yaw
